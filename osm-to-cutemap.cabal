@@ -8,7 +8,10 @@ executable          osm-to-cutemap
     main-is:        Main.hs
     ghc-options:    -Wall -threaded -O2 -rtsopts -with-rtsopts=-N
     extensions:     OverloadedStrings
-    build-depends:  base   >= 4      && < 5
+    build-depends:  base
                   , scotty
                   , HDBC
                   , HDBC-postgresql
+                  , aeson
+                  , bytestring
+                  , text

@@ -3,10 +3,12 @@
 
 module Models.Building where
 
+import GHC.Generics
+
 data Coords = Coords { x :: Double, y :: Double, z :: Double }
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 newtype Building = Building { coordinates :: [Coords] } 
-  deriving (Eq, Show)
+  deriving (Eq, Show, Generic)
 
 -- import GHC.Generics
 -- import Control.Monad.IO.Class()

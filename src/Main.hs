@@ -2,8 +2,17 @@
 
 import Web.Scotty
 
+import DB
+import Control.Monad.IO.Class
+
+getBuildings :: ActionM ()
+getBuildings = do
+  postcode <- param "postcode"
+  room <- liftIO (getPostcodeBuildings postcode) -- liftIO to actionM
+  json room
+
+routes :: ScottyM ()
+routes = get "/buildings/:postcode" getBuildings
+
 main :: IO ()
-main = scotty 3000 $ do
-  get "/:word" $ do
-    beam <- param "word"
-    html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
+main = scotty 3000 routes

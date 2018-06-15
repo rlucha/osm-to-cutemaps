@@ -19,6 +19,10 @@ data SqlCoords = SqlCoords [[Double]]
 instance FromJSON SqlCoords
 instance ToJSON SqlCoords
 
+-- Check System.Environment
+-- Check Control.Exception & bracket
+-- Check ReaderT design Pattern
+
 -- this path is absolute to the root of the project it seems
 -- get postcode from the environment or non checked-in file
 connString = "host=localhost dbname=osm_london port=3306 user='postgres' password='5jDnpuFFN21pF10n'"

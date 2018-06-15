@@ -1,14 +1,19 @@
-{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
 module Models.Building where
 
 import GHC.Generics
+import Data.Aeson
 
 data Coords = Coords { x :: Double, y :: Double, z :: Double }
   deriving (Eq, Show, Generic)
 newtype Building = Building { coordinates :: [Coords] } 
   deriving (Eq, Show, Generic)
+
+instance FromJSON Coords
+instance ToJSON Coords
+instance FromJSON Building
+instance ToJSON Building
 
 -- import GHC.Generics
 -- import Control.Monad.IO.Class()

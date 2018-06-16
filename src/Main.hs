@@ -2,17 +2,10 @@
 
 import Web.Scotty
 
-import DB
-import Control.Monad.IO.Class
-
-getBuildings :: ActionM ()
-getBuildings = do
-  postcode <- param "postcode"
-  room <- liftIO (getPostcodeBuildings postcode) -- liftIO to actionM
-  json room
+import Routes.Buildings
 
 routes :: ScottyM ()
-routes = get "/buildings/:postcode" getBuildings
+routes = get "/buildings/:postcode" Routes.Buildings.getByPostcode
 
 main :: IO ()
 main = scotty 3000 routes

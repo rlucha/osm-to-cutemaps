@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-
 module DB where
 
 import Data.Aeson 
@@ -12,6 +11,8 @@ import Models.Building (Building(..), Coords(..))
 import Models.Postcode (Postcode(..))
 import GHC.Generics
 import qualified Data.ByteString.Lazy.Char8 as B
+
+import DB.Config
 
 data SqlCoords = SqlCoords [[Double]]
   deriving (Show, Generic)
@@ -25,21 +26,7 @@ instance ToJSON SqlCoords
 
 -- this path is absolute to the root of the project it seems
 -- get postcode from the environment or non checked-in file
-connString = "host=localhost dbname=osm_london port=3306 user='postgres' password='5jDnpuFFN21pF10n'"
-
-getBuildingsQuery = "select  \
-  \ json_extract_path(ST_AsGeoJSON(way, 15)::json, 'coordinates', '0')::json as points \
-  \ from planet_osm_polygon p \
-  \ where ST_DWithin(p.way, ST_GeomFromText('SRID=3857;POINT(-7443.93434831 6699728.966326051)'), 1000) \
-  \ AND building is not NULL"
-
-getPostcodeBuildings :: String -> IO [Building]
-getPostcodeBuildings pcs = do
-  conn <- connectPostgreSQL connString
-  -- select <- prepare conn "SELECT * from postcodes_uk where postcode like 'SE228NP'"
-  -- _ <- execute select [toSql pcs]
-  results <- quickQuery conn getBuildingsQuery []
-  pure $ sqlToBuilding <$> results 
+-- connString = "host=localhost dbname=osm_london port=3306 user='postgres' password='5jDnpuFFN21pF10n'"
 
 getPostcodePosition :: String -> IO Postcode
 getPostcodePosition pcs = do

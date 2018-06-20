@@ -1,24 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 
-module DB where
+module DB.Common where
 
-import Data.Aeson 
-import Data.Maybe
 import Database.HDBC
 import Database.HDBC.PostgreSQL (connectPostgreSQL)
 import Models.Building (Building(..), Coords(..))
 import Models.Postcode (Postcode(..))
-import GHC.Generics
-import qualified Data.ByteString.Lazy.Char8 as B
 
 import DB.Config
+import DB.Postcodes
+import DB.Buildings
 
-data SqlCoords = SqlCoords [[Double]]
-  deriving (Show, Generic)
-
-instance FromJSON SqlCoords
-instance ToJSON SqlCoords
 
 -- Check System.Environment
 -- Check Control.Exception & bracket
@@ -28,27 +21,12 @@ instance ToJSON SqlCoords
 -- get postcode from the environment or non checked-in file
 -- connString = "host=localhost dbname=osm_london port=3306 user='postgres' password='5jDnpuFFN21pF10n'"
 
-getPostcodePosition :: String -> IO Postcode
-getPostcodePosition pcs = do
-  conn <- connectPostgreSQL connString
-  results <- quickQuery conn "SELECT * from postcodes where postcode like ?" [toSql pcs]
-  -- This should be a Maybe / Either and handle those cases properly
-  pure $ sqlToPostcode (head results)
-
-sqlToBuilding :: [SqlValue] -> Building
-sqlToBuilding row = building
-  -- we know row is always going to be a single value (but better use maybe head here)
-  where coords = (fromSql $ head row) :: String -- Coords.create get fst and snd from row
-        -- prepareCoords = createCoord coords
-        -- actually parse coords to a datatype (it is now a json string "[x,y]")
-        -- Maybe use HDBA/Aseon approach and try to find how to convert this into the proper text representation
-        stringCoords = (decode $ B.pack coords) :: Maybe SqlCoords
-        parsedCoords = fromMaybe (SqlCoords [[]]) stringCoords
-        createCoords (SqlCoords r) = (\[x',z'] -> Coords { x = x', y = 0, z = z'}) <$> r
-        building = Building $ createCoords parsedCoords
-
-sqlToPostcode :: [SqlValue] -> Postcode
-sqlToPostcode row = Postcode { lat = fromSql $ row!!1, long = fromSql $ row!!2}
+-- getPostcode :: String -> IO Postcode
+-- getPostcode pcs = do
+--   conn <- connectPostgreSQL connString
+--   results <- quickQuery conn "SELECT * from postcodes where postcode = ?" [toSql pcs]
+--   -- This should be a Maybe / Either and handle those cases properly
+--   pure $ sqlToPostcode (head results)
 
 -- Check precision changes with JS code in Gist
 degrees2meters :: Double ->  Double -> (Double, Double)
@@ -57,15 +35,15 @@ degrees2meters lat' long' = (x', y')
         y' = (log(tan((90 + lat') * pi / 360.00)) / (pi / 180.00)) * 20037508.34 / 180.00
 
 postcode2Mercator :: Postcode -> (Double, Double)
-postcode2Mercator (Postcode long' lat') = degrees2meters long' lat'
+postcode2Mercator (Postcode _ long' lat') = degrees2meters long' lat'
 
-showBuildings :: IO ()
-showBuildings = do
-  ps <- getPostcodePosition "SE228NP"
-  print ps
-  -- bs <- getPostcodeBuildings "SE228NP"
-  print $ postcode2Mercator ps
-
+showBuildings :: String -> IO [Building]
+showBuildings ps = do
+  postcode  <- DB.Postcodes.getPostcode ps
+  let (lat', long') = postcode2Mercator postcode
+      geom = "POINT(" ++ show lat' ++ " " ++ show long' ++ ")"
+  print geom
+  DB.Buildings.getByPointGeom geom
   -- The Latitude, Longitude of se228np is:
   -- 51.44130,-0.06687  -- 
 

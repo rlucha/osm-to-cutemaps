@@ -3,5 +3,5 @@
 
 module Models.Postcode where
 
-data Postcode = Postcode { lat :: Double, long :: Double }
+data Postcode = Postcode { postcode :: String, lat :: Double, long :: Double }
   deriving (Eq, Show)

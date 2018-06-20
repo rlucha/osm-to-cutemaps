@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Routes.Buildings where
 
 import Web.Scotty

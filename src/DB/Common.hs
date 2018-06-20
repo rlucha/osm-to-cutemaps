@@ -7,6 +7,7 @@ import Database.HDBC
 import Database.HDBC.PostgreSQL (connectPostgreSQL)
 import Models.Building (Building(..), Coords(..))
 import Models.Postcode (Postcode(..))
+import Data.Text
 
 import DB.Config
 import DB.Postcodes
@@ -39,7 +40,7 @@ postcode2Mercator (Postcode _ long' lat') = degrees2meters long' lat'
 
 showBuildings :: String -> IO [Building]
 showBuildings ps = do
-  postcode  <- DB.Postcodes.getPostcode ps
+  postcode  <- DB.Postcodes.getPostcode $ (unpack . toUpper . pack) ps
   let (lat', long') = postcode2Mercator postcode
       geom = "POINT(" ++ show lat' ++ " " ++ show long' ++ ")"
   print geom
